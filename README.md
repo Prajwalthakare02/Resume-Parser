@@ -80,4 +80,4 @@ MIT License
 
 ## Author
 
-Prajwal Thakare 
+Prajwal Thakare
