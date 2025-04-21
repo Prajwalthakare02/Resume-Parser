@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Parser</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📄</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 800px;
+            margin-top: 30px;
+        }
+        #results {
+            display: none;
+            margin-top: 30px;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            color: #343a40;
+        }
+        .resume-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Resume Parser</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Upload Resume</h5>
+                <p class="card-text">Upload your resume file (PDF, DOCX, DOC, or TXT) to extract information.</p>
+                
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input class="form-control" type="file" id="resume-file" accept=".pdf,.docx,.doc,.txt" required aria-label="Resume file upload">
+                        <div class="form-text">Maximum file size: 16MB</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Parse Resume</button>
+                </form>
+                
+                <div class="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Parsing your resume...</p>
+                </div>
+                
+                <div class="error-message"></div>
+            </div>
+        </div>
+        
+        <div id="results">
+            <h2 class="text-center mb-4">Parsing Results</h2>
+            
+            <div class="resume-section">
+                <h3 class="section-title">Basic Information</h3>
+                <div id="basic-info"></div>
+            </div>
+            
+            <div class="resume-section">
+                <h3 class="section-title">Contact Information</h3>
+                <div id="contact-info"></div>
+            </div>
+            
+            <div class="resume-section">
+                <h3 class="section-title">Education</h3>
+                <div id="education"></div>
+            </div>
+            
+            <div class="resume-section">
+                <h3 class="section-title">Experience</h3>
+                <div id="experience"></div>
+            </div>
+            
+            <div class="resume-section">
+                <h3 class="section-title">Skills</h3>
+                <div id="skills"></div>
+            </div>
+            
+            <div class="resume-section">
+                <h3 class="section-title">Projects</h3>
+                <div id="projects"></div>
+            </div>
+            
+            <div class="resume-section">
+                <h3 class="section-title">Certifications</h3>
+                <div id="certifications"></div>
+            </div>
+            
+            <button id="clear-btn" class="btn btn-secondary mt-3">Clear Results</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#upload-form').on('submit', function(e) {
+                e.preventDefault();
+                
+                const fileInput = $('#resume-file')[0];
+                if (!fileInput.files.length) {
+                    showError('Please select a file to upload');
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Clear previous results and errors
+                $('#results').hide();
+                $('.error-message').hide();
+                
+                // Show loading spinner
+                $('.loading').show();
+                
+                $.ajax({
+                    url: '/parse',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                        $('.loading').hide();
+                        displayResults(data);
+                    },
+                    error: function(xhr) {
+                        $('.loading').hide();
+                        let errorMsg = 'Error parsing resume';
+                        
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            errorMsg = xhr.responseJSON.error;
+                        }
+                        
+                        showError(errorMsg);
+                    }
+                });
+            });
+            
+            $('#clear-btn').on('click', function() {
+                $('#results').hide();
+                $('#upload-form')[0].reset();
+            });
+            
+            function showError(message) {
+                $('.error-message').text(message).show();
+            }
+            
+            function displayResults(data) {
+                // Basic info
+                let basicInfo = '';
+                if (data.name) {
+                    basicInfo += `<p><strong>Name:</strong> ${data.name}</p>`;
+                }
+                if (data.summary) {
+                    basicInfo += `<p><strong>Summary:</strong> ${data.summary}</p>`;
+                }
+                $('#basic-info').html(basicInfo || '<p>No basic information extracted</p>');
+                
+                // Contact info
+                let contactInfo = '';
+                if (data.email && data.email.length) {
+                    contactInfo += `<p><strong>Email:</strong> ${data.email.join(', ')}</p>`;
+                }
+                if (data.phone && data.phone.length) {
+                    contactInfo += `<p><strong>Phone:</strong> ${data.phone.join(', ')}</p>`;
+                }
+                if (data.linkedin) {
+                    contactInfo += `<p><strong>LinkedIn:</strong> ${data.linkedin}</p>`;
+                }
+                if (data.websites && data.websites.length) {
+                    contactInfo += `<p><strong>Websites:</strong> ${data.websites.join(', ')}</p>`;
+                }
+                $('#contact-info').html(contactInfo || '<p>No contact information extracted</p>');
+                
+                // Education
+                let education = '';
+                if (data.education && data.education.length) {
+                    education = '<ul>';
+                    data.education.forEach(function(edu) {
+                        education += '<li>';
+                        if (edu.degree) education += `<strong>${edu.degree}</strong>`;
+                        if (edu.institution) education += ` at ${edu.institution}`;
+                        if (edu.date) education += ` (${edu.date})`;
+                        if (edu.gpa) education += `<br>GPA: ${edu.gpa}`;
+                        education += '</li>';
+                    });
+                    education += '</ul>';
+                }
+                $('#education').html(education || '<p>No education information extracted</p>');
+                
+                // Experience
+                let experience = '';
+                if (data.experience && data.experience.length) {
+                    experience = '<ul>';
+                    data.experience.forEach(function(exp) {
+                        experience += '<li>';
+                        if (exp.title) experience += `<strong>${exp.title}</strong>`;
+                        if (exp.company) experience += ` at ${exp.company}`;
+                        if (exp.date) experience += ` (${exp.date})`;
+                        if (exp.description) experience += `<br>${exp.description}`;
+                        experience += '</li>';
+                    });
+                    experience += '</ul>';
+                }
+                $('#experience').html(experience || '<p>No experience information extracted</p>');
+                
+                // Skills
+                let skills = '';
+                if (data.skills && data.skills.length) {
+                    skills = '<ul>';
+                    data.skills.forEach(function(skill) {
+                        skills += `<li>${skill}</li>`;
+                    });
+                    skills += '</ul>';
+                }
+                $('#skills').html(skills || '<p>No skills extracted</p>');
+                
+                // Projects
+                let projects = '';
+                if (data.projects && data.projects.length) {
+                    projects = '<ul>';
+                    data.projects.forEach(function(project) {
+                        projects += '<li>';
+                        if (project.name) projects += `<strong>${project.name}</strong>`;
+                        if (project.date) projects += ` (${project.date})`;
+                        if (project.description) projects += `<br>${project.description}`;
+                        projects += '</li>';
+                    });
+                    projects += '</ul>';
+                }
+                $('#projects').html(projects || '<p>No projects extracted</p>');
+                
+                // Certifications
+                let certifications = '';
+                if (data.certifications && data.certifications.length) {
+                    certifications = '<ul>';
+                    data.certifications.forEach(function(cert) {
+                        certifications += '<li>';
+                        if (cert.name) certifications += `<strong>${cert.name}</strong>`;
+                        if (cert.issuer) certifications += ` from ${cert.issuer}`;
+                        if (cert.date) certifications += ` (${cert.date})`;
+                        certifications += '</li>';
+                    });
+                    certifications += '</ul>';
+                }
+                $('#certifications').html(certifications || '<p>No certifications extracted</p>');
+                
+                // Show results
+                $('#results').show();
+            }
+        });
+    </script>
+</body>
+</html> 

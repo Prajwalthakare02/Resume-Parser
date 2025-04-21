@@ -1,0 +1,40 @@
+John Doe
+123 Main Street, New York, NY 10001
+Phone: (555) 123-4567
+Email: john.doe@example.com
+LinkedIn: https://linkedin.com/in/johndoe
+GitHub: https://github.com/johndoe
+
+PROFESSIONAL SUMMARY
+Experienced software engineer with 5+ years of expertise in Python development and machine learning. Passionate about building scalable applications and solving complex problems.
+
+EDUCATION
+Bachelor of Science in Computer Science
+New York University, New York, NY
+Graduated: May 2018
+
+WORK EXPERIENCE
+
+Senior Software Engineer
+ABC Tech, New York, NY
+June 2020 - Present
+- Developed and maintained Python-based microservices using Flask and FastAPI
+- Implemented machine learning models for predictive analytics
+- Led a team of 3 junior developers on a customer-facing project
+
+Software Developer
+XYZ Solutions, Boston, MA
+August 2018 - May 2020
+- Built RESTful APIs using Django
+- Optimized database queries resulting in 40% performance improvement
+- Participated in agile development processes
+
+SKILLS
+- Programming Languages: Python, JavaScript, SQL, Java
+- Frameworks: Django, Flask, React
+- Tools: Git, Docker, AWS, Azure
+- Databases: PostgreSQL, MongoDB, Redis
+
+CERTIFICATIONS
+- AWS Certified Developer - Associate
+- Microsoft Certified: Azure Developer Associate 
